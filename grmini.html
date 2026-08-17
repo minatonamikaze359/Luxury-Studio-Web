@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini 2.5 Flash | MINATO TOOLS HUB</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="https://files.catbox.moe/9d9jjj.jpg">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #7000ff;
+            --bg-gradient: linear-gradient(135deg, #05070f 0%, #0a0e1a 100%);
+            --card-bg: rgba(15, 23, 42, 0.65);
+            --card-border: rgba(0, 243, 255, 0.2);
+            --accent-glow: linear-gradient(135deg, #00f3ff, #7000ff);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Particle Canvas Background */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            background: rgba(5, 7, 15, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+            object-fit: cover;
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #fff 30%, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.15), rgba(112, 0, 255, 0.15));
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+
+        /* Container & Workspace */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 900px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            height: 75vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .brand h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(112, 0, 255, 0.2));
+            border: 1px solid var(--primary);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 18px;
+            border-radius: 16px;
+            display: none;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .input-area {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid var(--card-border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+        }
+
+        .input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-btn {
+            background: var(--accent-glow);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(5, 7, 15, 0.9);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .dev-highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem; flex-direction: column; gap: 1rem; }
+            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .main-wrapper { padding: 15px 10px; }
+            .chat-container { height: 80vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html" class="nav-brand">
+            <img src="https://files.catbox.moe/9d9jjj.jpg" alt="Logo" class="nav-logo">
+            <span class="brand-title">MINATO HUB</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-btn"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="gemini.html" class="nav-btn active"><i class="fa-solid fa-bolt"></i> Gemini 2.5</a></li>
+            <li><a href="gpt5.html" class="nav-btn"><i class="fa-solid fa-brain"></i> GPT-5</a></li>
+            <li><a href="fluxv2.html" class="nav-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Flux V2</a></li>
+            <li><a href="tools.html" class="nav-btn"><i class="fa-solid fa-toolbox"></i> All Tools</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="main-wrapper">
+        <div class="chat-container">
+            <div class="header">
+                <div class="brand">
+                    <div class="avatar-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div>
+                        <h2>Gemini 2.5 Flash Engine</h2>
+                        <p style="font-size:0.8rem; color:var(--text-secondary);">Ultra-Fast Multimodal Processing</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                <div class="message ai-message">System online. Gemini 2.5 Flash engine activated. How can I assist you today?</div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div class="input-area">
+                <form id="chatForm" class="input-group">
+                    <input type="text" id="userInput" placeholder="Ask Gemini 2.5 Flash anything..." required autocomplete="off">
+                    <button type="submit" class="send-btn" id="sendBtn">
+                        <i class="fa-solid fa-paper-plane"></i> Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <span class="dev-highlight">MINATO TOOLS HUB</span>. Crafted & Maintained by <span class="dev-highlight">LORD MINATO</span>.</p>
+    </footer>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        const SYSTEM_INSTRUCTION = "You are Gemini 2.5 Flash, an advanced AI developed for MINATO TOOLS HUB. Provide quick, precise, and well-structured answers.";
+
+        // Conversation History Context
+        const conversationHistory = [
+            { role: 'system', content: SYSTEM_INSTRUCTION }
+        ];
+
+        function appendMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message');
+            msgDiv.classList.add(isUser ? 'user-message' : 'ai-message');
+            msgDiv.textContent = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return msgDiv;
+        }
+
+        async function fetchGeminiResponse(userPrompt) {
+            const apiEndpoint = `https://smartex.omex.workers.dev/ai/smtx_key_1fff2bc2f2af4e1c99a4b61b4be2e991/gemini-2.5-flash?message=${encodeURIComponent(userPrompt)}`;
+
+            // Strategy 1: Direct GET request to custom Smartex API worker
+            try {
+                const res = await fetch(apiEndpoint);
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Universal response text extraction
+                    let output = "";
+                    if (typeof data === 'string') {
+                        output = data;
+                    } else if (data.response) {
+                        output = data.response;
+                    } else if (data.reply) {
+                        output = data.reply;
+                    } else if (data.result) {
+                        output = data.result;
+                    } else if (data.choices && data.choices[0] && data.choices[0].message) {
+                        output = data.choices[0].message.content;
+                    } else {
+                        output = JSON.stringify(data);
+                    }
+
+                    if (output && output.trim().length > 0) return output;
+                }
+            } catch (e) {
+                console.warn("Primary Smartex API call failed, switching to backup pool...", e);
+            }
+
+            // Strategy 2: High-speed backup endpoint with system instruction
+            try {
+                const encodedSystem = encodeURIComponent(SYSTEM_INSTRUCTION);
+                const encodedPrompt = encodeURIComponent(userPrompt);
+                const seed = Math.floor(Math.random() * 1000000);
+                const backupUrl = `https://text.pollinations.ai/${encodedPrompt}?system=${encodedSystem}&model=openai&seed=${seed}`;
+                
+                const res = await fetch(backupUrl);
+                if (res.ok) {
+                    const text = await res.text();
+                    if (text && text.trim().length > 0) return text;
+                }
+            } catch (e) {
+                console.error("Backup API error:", e);
+            }
+
+            throw new Error("Unable to connect to Gemini 2.5 Flash services.");
+        }
+
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage(message, true);
+            conversationHistory.push({ role: 'user', content: message });
+            userInput.value = '';
+
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            typingIndicator.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const aiResponse = await fetchGeminiResponse(message);
+                typingIndicator.style.display = 'none';
+
+                appendMessage(aiResponse, false);
+                conversationHistory.push({ role: 'assistant', content: aiResponse });
+
+            } catch (err) {
+                typingIndicator.style.display = 'none';
+                appendMessage('Error: Gemini 2.5 Flash service is temporarily unreachable. Please try sending your message again.', false);
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        });
+
+        // Canvas Background Animation
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(0, 243, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 60; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+    </script>
+</body>
+</html>
